@@ -134,7 +134,7 @@ def call(Map pipelineParams){
                     script {
                         //envDeploy, hostPort, contPort)
                         imageValidation().call()
-                        dockerDeploy('dev', "${env.HOST_PORT}", "${env.CONT_PORT}").call()
+                        dockerDeploy('dev', "${env.DEV_HOST_PORT}", "${env.CONT_PORT}").call()
                     }
                 }
             }
@@ -148,7 +148,7 @@ def call(Map pipelineParams){
                     script {
                         //envDeploy, hostPort, contPort)
                         imageValidation().call()
-                        dockerDeploy('tst', "${env.HOST_PORT}", "${env.CONT_PORT}").call()
+                        dockerDeploy('tst', "${env.TST_HOST_PORT}", "${env.CONT_PORT}").call()
                     }
                 }
             }
@@ -170,7 +170,7 @@ def call(Map pipelineParams){
                     script {
                         //envDeploy, hostPort, contPort)
                         imageValidation().call()
-                        dockerDeploy('stg', "${env.HOST_PORT}", "${env.CONT_PORT}").call()
+                        dockerDeploy('stg', "${env.STG_HOST_PORT}", "${env.CONT_PORT}").call()
                     }
 
                 }
@@ -194,7 +194,7 @@ def call(Map pipelineParams){
                     }
                     script {
                         //envDeploy, hostPort, contPort)
-                        dockerDeploy('prd', "${env.HOST_PORT}", "${env.CONT_PORT}").call()
+                        dockerDeploy('prd', "${env.PRD_HOST_PORT}", "${env.CONT_PORT}").call()
                     }
                 }
             }
