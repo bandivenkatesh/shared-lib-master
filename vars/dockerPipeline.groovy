@@ -48,10 +48,10 @@ def call(Map pipelineParams){
         }
         environment {
             APPLICATION_NAME = "${pipelineParams.appName}"
-            // DEV_HOST_PORT = "${pipelineParams.devHostPort}"
-            // TST_HOST_PORT = "${pipelineParams.tstHostPort}"
-            //STG_HOST_PORT = "${pipelineParams.stgHostPort}"
-            //PRD_HOST_PORT = "${pipelineParams.prdHostPort}"
+            DEV_HOST_PORT = "${pipelineParams.devHostPort}"
+            TST_HOST_PORT = "${pipelineParams.tstHostPort}"
+            STG_HOST_PORT = "${pipelineParams.stgHostPort}"
+            PRD_HOST_PORT = "${pipelineParams.prdHostPort}"
             HOST_PORT = "${pipelineParams.hostPort}"
             CONT_PORT = "${pipelineParams.contPort}"
             SONAR_TOKEN = credentials('sonar_creds')
