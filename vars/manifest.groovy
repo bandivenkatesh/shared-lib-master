@@ -19,12 +19,12 @@ def call(Map pipelineParams){
         }
         environment {
             APPLICATION_NAME = "${pipelineParams.appName}"
-            SONAR_URL = "http://35.196.148.247:9000"
+            SONAR_URL = "http://34.68.98.190:9000"
             SONAR_TOKEN = credentials('sonar_creds')
-            DOCKER_HUB = "docker.io/i27k8s10"
+            DOCKER_HUB = "docker.io/venky2222"
             GKE_DEV_CLUSTER_NAME = "cart-dev-ns"
             GKE_DEV_ZONE = "us-central1-c"
-            GKE_DEV_PROJECT = "quantum-weft-420714"
+            GKE_DEV_PROJECT = "supple-outlet-447613-k8"
             K8S_DEV_FILE = "k8s_dev.yaml"
             K8S_TST_FILE = "k8s_tst.yaml"
             K8S_STAGE_FILE = "k8s_stage.yaml"
@@ -38,9 +38,9 @@ def call(Map pipelineParams){
             TST_ENV = "tst"
             STAGE_ENV = "stage"
             PROD_ENV = "prod"
-            JFROG_DOCKER_REGISTRY = "flipkarrt.jfrog.io"
-            JFROG_DOCKER_REPO_NAME = "cont-images-docker"
-            JFROG_CREDS = credentials('JFROG_CREDS')
+        //    JFROG_DOCKER_REGISTRY = "flipkarrt.jfrog.io"
+        //    JFROG_DOCKER_REPO_NAME = "cont-images-docker"
+        //    JFROG_CREDS = credentials('JFROG_CREDS')
         }
         stages {
             stage ('Checkout'){

@@ -55,13 +55,13 @@ def call(Map pipelineParams){
             HOST_PORT = "${pipelineParams.hostPort}"
             CONT_PORT = "${pipelineParams.contPort}"
             SONAR_TOKEN = credentials('sonar_creds')
-            SONAR_URL = "http://34.55.191.104:9000"
+            SONAR_URL = "http://34.68.98.190:9000"
             // https://www.jenkins.io/doc/pipeline/steps/pipeline-utility-steps/#readmavenpom-read-a-maven-project-file
             // If any errors with readMavenPom, make sure pipeline-utility-steps plugin is installed in your jenkins, if not do install it
             // http://34.139.130.208:8080/scriptApproval/
             POM_VERSION = readMavenPom().getVersion()
             POM_PACKAGING = readMavenPom().getPackaging()
-            DOCKER_HUB = "docker.io/i27devopsb4"
+            DOCKER_HUB = "docker.io/venky2222"
             DOCKER_CREDS = credentials('dockerhub_creds') //username and password
         }
         stages {
@@ -241,7 +241,7 @@ def imageValidation() {
 def dockerDeploy(envDeploy, hostPort, contPort){
     return {
         echo "Deploying to $envDeploy Environmnet"
-            withCredentials([usernamePassword(credentialsId: 'maha_ssh_docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+            withCredentials([usernamePassword(credentialsId: 'venky_ssh_docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                 script {
                     sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip \"docker pull ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}\""
                     try {
