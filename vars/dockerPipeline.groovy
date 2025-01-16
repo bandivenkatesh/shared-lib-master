@@ -205,7 +205,7 @@ def call(Map pipelineParams){
 // Method for Maven Build
 def buildApp() {
     return {
-        echo "Building the ${env.APPLICATION_NAME} Application"
+        echo "********************* Building the ${env.APPLICATION_NAME} Application *********************"
         sh 'mvn clean package -DskipTests=true'
     }
 }
@@ -213,24 +213,25 @@ def buildApp() {
 // Method for Docker build and Push
 def dockerBuildAndPush(){
     return {
-        echo "************************* Building Docker image*************************"
+        echo "******************************** Building Docker image ********************************"
         sh "cp ${WORKSPACE}/target/i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING} ./.cicd"
         sh "docker build --no-cache --build-arg JAR_SOURCE=i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT} ./.cicd"
-        echo "************************ Login to Docker Registry ************************"
+        echo "******************************* Login to Docker Registry *******************************"
         sh "docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}"
+        echo "******************************* Pushing Docker image *********************************"
         sh "docker push ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
     }
 }
 
 def imageValidation() {
     return {
-        println("Attemting to Pull the Docker Image")
+        println("******************************** Attempting to Pull the Docker Image ********************************")
         try {
             sh "docker pull ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
-            println("Image is Pulled Succesfully!!!!")
+            println("******************************** Image is Pulled Successfully! ********************************")
         }
         catch(Exception e) {
-            println("OOPS!, the docker image with this tag is not available,So Creating the Image")
+            println("******************************** OOPS! Docker image not found, Creating new Image ********************************")
             buildApp().call()
             dockerBuildAndPush().call()
         }
@@ -241,28 +242,26 @@ def imageValidation() {
 // Method for deploying containers in diff env
 def dockerDeploy(envDeploy, hostPort, contPort){
     return {
-        echo "Deploying to $envDeploy Environmnet"
-            withCredentials([usernamePassword(credentialsId: 'venky_ssh_docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                script {
-                    sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip \"docker pull ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}\""
-                    try {
-                        // Stop the Container
-                        sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker stop ${env.APPLICATION_NAME}-$envDeploy"
-                        // Remove the Container
-                        sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker rm ${env.APPLICATION_NAME}-$envDeploy"
-                    }
-                    catch(err) {
-                        echo "Error Caught: $err"
-                    }
-
-                    // Create the container
-                    sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker run -dit --name ${env.APPLICATION_NAME}-$envDeploy -p $hostPort:$contPort ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
-                }   
+        echo "******************************** Deploying to $envDeploy Environment ********************************"
+        script {
+            echo "******************************** Pulling latest image ********************************"
+            sh "docker pull ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
+            
+            try {
+                echo "******************************** Stopping existing container ********************************"
+                sh "docker stop ${env.APPLICATION_NAME}-$envDeploy"
+                echo "******************************** Removing existing container ********************************"
+                sh "docker rm ${env.APPLICATION_NAME}-$envDeploy"
             }
+            catch(err) {
+                echo "******************************** Error Caught: $err ********************************"
+            }
+
+            echo "******************************** Creating new container ********************************"
+            sh "docker run -dit --name ${env.APPLICATION_NAME}-$envDeploy -p $hostPort:$contPort ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
+        }   
     }
 }
-
-
 
 // Eureka 
 // continer port" 8761
