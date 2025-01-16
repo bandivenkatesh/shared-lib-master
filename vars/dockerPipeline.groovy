@@ -63,6 +63,7 @@ def call(Map pipelineParams){
             POM_PACKAGING = readMavenPom().getPackaging()
             DOCKER_HUB = "docker.io/venky2222"
             DOCKER_CREDS = credentials('dockerhub_creds') //username and password
+            dev_ip = "10.2.0.4"
         }
         stages {
             stage ('Build') {
