@@ -43,14 +43,6 @@ def call(Map pipelineParams){
             CONT_PORT = "3000"
         }
         stages {
-            stage ('Authentication'){
-                steps {
-                    echo "Executing in GCP project"
-                    script {
-                        k8s.auth_login()
-                    }
-                }
-            }
             stage ('Docker Build and Push') {
                 when {
                     anyOf {
