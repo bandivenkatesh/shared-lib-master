@@ -1,14 +1,9 @@
 import com.i27academy.builds.Calculator
 import com.i27academy.builds.Docker
-import com.i27academy.k8s.K8s
 
 def call(Map pipelineParams){
-    // An instance of the class called calculator is created
     Calculator calculator = new Calculator(this)
-    Docker docker = new Docker(this)   
-    K8s k8s = new K8s(this) 
-
-// This Jenkinsfile is for Eureka Deployment 
+    Docker docker = new Docker(this)    
 
     pipeline {
         agent {
@@ -39,16 +34,13 @@ def call(Map pipelineParams){
 
         environment {
             APPLICATION_NAME = "${pipelineParams.appName}"
-            DOCKER_HUB = "docker.io/i27devopsb4"
-            DOCKER_CREDS = credentials('dockerhub_creds') //username and password
-            K8S_DEV_FILE = "k8s_dev.yaml"
-            K8S_TST_FILE = "k8s_tst.yaml"
-            K8S_STG_FILE = "k8s_stg.yaml"
-            K8S_PRD_FILE = "k8s_prd.yaml"
-            DEV_NAMESPACE = "clothing-dev-ns"
-            TST_NAMESPACE = "clothing-tst-ns"
-            STG_NAMESPACE = "clothing-stg-ns"
-            PROD_NAMESPACE = "clothing-prd-ns"
+            DOCKER_HUB = "docker.io/venky2222"
+            DOCKER_CREDS = credentials('dockerhub_creds')
+            DEV_HOST_PORT = "30002"
+            TST_HOST_PORT = "30003"
+            STG_HOST_PORT = "30004"
+            PRD_HOST_PORT = "30005"
+            CONT_PORT = "3000"
         }
         stages {
             stage ('Authentication'){
@@ -81,9 +73,8 @@ def call(Map pipelineParams){
                 }
                 steps {
                     script {
-                        def docker_image = "${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
                         imageValidation().call()
-                        k8s.k8sdeploy("${env.K8S_DEV_FILE}", docker_image, "${env.DEV_NAMESPACE}")
+                        dockerDeploy('dev', "${env.DEV_HOST_PORT}", "${env.CONT_PORT}").call()
                         echo "Deployed to Dev Successfully"
                     }
                 }
@@ -96,9 +87,8 @@ def call(Map pipelineParams){
                 }
                 steps {
                     script {
-                        def docker_image = "${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
                         imageValidation().call()
-                        k8s.k8sdeploy("${env.K8S_TST_FILE}", docker_image, "${env.TST_NAMESPACE}")
+                        dockerDeploy('tst', "${env.TST_HOST_PORT}", "${env.CONT_PORT}").call()
                         echo "Deployed to Test Successfully"
                     }
                 }
@@ -119,9 +109,8 @@ def call(Map pipelineParams){
                 }
                 steps {
                     script {
-                        def docker_image = "${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
                         imageValidation().call()
-                        k8s.k8sdeploy("${env.K8S_STG_FILE}", docker_image, "${env.STG_NAMESPACE}")
+                        dockerDeploy('stg', "${env.STG_HOST_PORT}", "${env.CONT_PORT}").call()
                         echo "Deployed to Stage Successfully"
                     }
                 }
@@ -141,9 +130,8 @@ def call(Map pipelineParams){
                 }
                 steps {
                     script {
-                        def docker_image = "${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
                         imageValidation().call()
-                        k8s.k8sdeploy("${env.K8S_PRD_FILE}", docker_image, "${env.PROD_NAMESPACE}")
+                        dockerDeploy('prd', "${env.PRD_HOST_PORT}", "${env.CONT_PORT}").call()
                         echo "Deployed to Prod Successfully"
                     }
                 }
@@ -179,6 +167,35 @@ def imageValidation() {
             buildApp().call()
             dockerBuildAndPush().call()
         }
+    }
+}
+
+def dockerDeploy(envDeploy, hostPort, contPort){
+    return {
+        echo "******************************** Deploying to $envDeploy Environment ********************************"
+        script {
+            echo "******************************** Pulling latest image ********************************"
+            sh "docker pull ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}"
+            
+            try {
+                echo "******************************** Stopping existing container ********************************"
+                sh "docker stop ${env.APPLICATION_NAME}-$envDeploy"
+                echo "******************************** Removing existing container ********************************"
+                sh "docker rm ${env.APPLICATION_NAME}-$envDeploy"
+            }
+            catch(err) {
+                echo "******************************** Error Caught: $err ********************************"
+            }
+
+            echo "******************************** Creating new container ********************************"
+            sh """
+                docker run -dit --name ${env.APPLICATION_NAME}-$envDeploy \
+                -p $hostPort:$contPort \
+                -e ENVIRONMENT=$envDeploy \
+                ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT} \
+                /entrypoint.sh $envDeploy
+            """
+        }   
     }
 }
 
