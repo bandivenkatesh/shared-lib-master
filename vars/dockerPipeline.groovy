@@ -64,6 +64,7 @@ def call(Map pipelineParams){
             DOCKER_HUB = "docker.io/venky2222"
             DOCKER_CREDS = credentials('dockerhub_creds') //username and password
             dev_ip = "10.2.0.4"
+            GIT_BRANCH = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
         }
         stages {
             stage ('Build') {
@@ -155,37 +156,22 @@ def call(Map pipelineParams){
             stage ('Deploy to Stage') {
                 when {
                     allOf {
-                        anyOf {
-                            expression {
-                                params.deployToStage == 'yes'
-                                // other condition
-                            }
-                        }
-                        anyOf{
-                            branch 'release/*'
-                        }
+                        expression { params.deployToStage == 'yes' }
+                        expression { env.GIT_BRANCH ==~ /release\/*/ }
                     }
                 }
                 steps {
                     script {
-                        //envDeploy, hostPort, contPort)
                         imageValidation().call()
                         dockerDeploy('stg', "${env.STG_HOST_PORT}", "${env.CONT_PORT}").call()
                     }
-
                 }
             }
             stage ('Deploy to Prod') {
                 when {
                     allOf {
-                        anyOf{
-                            expression {
-                                params.deployToProd == 'yes'
-                            }
-                        }
-                        anyOf{
-                            tag pattern: "v\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}",  comparator: "REGEXP" //v1.2.3
-                        }
+                        expression { params.deployToProd == 'yes' }
+                        expression { env.GIT_BRANCH ==~ /v\d{1,2}\.\d{1,2}\.\d{1,2}/ }
                     }
                 }
                 steps {
