@@ -41,6 +41,7 @@ def call(Map pipelineParams){
             STG_HOST_PORT = "30004"
             PRD_HOST_PORT = "30005"
             CONT_PORT = "3000"
+            GIT_BRANCH = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
         }
         stages {
             stage ('Docker Build and Push') {
@@ -88,14 +89,9 @@ def call(Map pipelineParams){
             stage ('Deploy to Stage') {
                 when {
                     allOf {
-                        anyOf {
-                            expression {
-                                params.deployToStage == 'yes'
-                                // other condition
-                            }
-                        }
-                        anyOf{
-                            branch 'release/*'
+                        expression { 
+                            params.deployToStage == 'yes' && 
+                            env.GIT_BRANCH ==~ /release\/.*/
                         }
                     }
                 }
@@ -110,13 +106,9 @@ def call(Map pipelineParams){
             stage('Deploy to Prod') {
                 when {
                     allOf {
-                        anyOf{
-                            expression {
-                                params.deployToProd == 'yes'
-                            }
-                        }
-                        anyOf{
-                            tag pattern: "v\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}",  comparator: "REGEXP" //v1.2.3
+                        expression { 
+                            params.deployToProd == 'yes' && 
+                            env.GIT_BRANCH ==~ /v\d{1,2}\.\d{1,2}\.\d{1,2}/
                         }
                     }
                 }
