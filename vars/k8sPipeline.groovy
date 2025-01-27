@@ -57,13 +57,13 @@ def call(Map pipelineParams){
             HOST_PORT = "${pipelineParams.hostPort}"
             CONT_PORT = "${pipelineParams.contPort}"
             SONAR_TOKEN = credentials('sonar_creds')
-            SONAR_URL = "http://34.55.191.104:9000"
+            SONAR_URL = "http://34.68.98.190:9000"
             // https://www.jenkins.io/doc/pipeline/steps/pipeline-utility-steps/#readmavenpom-read-a-maven-project-file
             // If any errors with readMavenPom, make sure pipeline-utility-steps plugin is installed in your jenkins, if not do install it
             // http://34.139.130.208:8080/scriptApproval/
             POM_VERSION = readMavenPom().getVersion()
             POM_PACKAGING = readMavenPom().getPackaging()
-            DOCKER_HUB = "docker.io/i27devopsb4"
+            DOCKER_HUB = "docker.io/venky2222"
             DOCKER_CREDS = credentials('dockerhub_creds') //username and password
             K8S_DEV_FILE = "k8s_dev.yaml"
             K8S_TST_FILE = "k8s_tst.yaml"
@@ -72,6 +72,7 @@ def call(Map pipelineParams){
             DEV_NAMESPACE = "cart-dev-ns"
             TST_NAMESPACE = "cart-tst-ns"
             STG_NAMESPACE = "cart-stg-ns"
+            dev_ip = "10.2.0.4"
             PROD_NAMESPACE = "cart-prod-ns"
         }
         stages {
