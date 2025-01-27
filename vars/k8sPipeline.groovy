@@ -203,14 +203,8 @@ def call(Map pipelineParams){
             stage ('Deploy to Prod') {
                 when {
                     allOf {
-                        anyOf{
-                            expression {
-                                params.deployToProd == 'yes'
-                            }
-                        }
-                        anyOf{
-                            tag pattern: "v\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}",  comparator: "REGEXP" //v1.2.3
-                        }
+                        expression { params.deployToProd == 'yes' }
+                        expression { env.GIT_BRANCH ==~ /v\d{1,2}\.\d{1,2}\.\d{1,2}/ }
                     }
                 }
                 steps {
